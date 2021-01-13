@@ -53,7 +53,6 @@ function AddItemForm(props: AddItemFormPropsType) {
             <IconButton color={"primary"} onClick={ onAddItemClick }>
                 <AddBox/>
             </IconButton>
-            <Button variant={"contained"} color={"primary"} onClick={ onAddItemClick }>+</Button>
             {/*{error && <div className={"error-message"}>{error}</div>}*/}
         </div>
     )
