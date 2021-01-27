@@ -1,9 +1,9 @@
-import React, {ChangeEvent, KeyboardEvent, useCallback, useState} from "react";
+import React, {ChangeEvent, useCallback} from "react";
 import {FilterValuesType, TaskType} from "./App";
 import AddItemForm from "./AddItemForm";
 import EditableSpan from "./EditableSpan";
-import {Button, Checkbox, IconButton} from "@material-ui/core";
-import {CheckBox, Delete} from "@material-ui/icons";
+import {Button, IconButton} from "@material-ui/core";
+import {Delete} from "@material-ui/icons";
 import {Task} from "./Task";
 
 type PropsType = {
@@ -63,10 +63,8 @@ export const TodoList = React.memo(function (props: PropsType) {
                             return (
                                 <Task
                                     key={t.id}
-                                    taskId={t.id}
+                                    task={t}
                                     todolistId={props.id}
-                                    isDone={t.isDone}
-                                    title={t.title}
                                     removeTask={props.removeTask}
                                     changeTaskStatus={props.changeTaskStatus}
                                     changeTaskTitle={props.changeTaskTitle}
