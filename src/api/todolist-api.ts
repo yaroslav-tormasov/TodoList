@@ -13,7 +13,7 @@ const instance = axios.create({
     }
 )
 
-type TodoListType = {
+export type TodoListType = {
     id: string
     title: string
     order: number
