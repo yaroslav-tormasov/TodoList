@@ -9,7 +9,7 @@ import {addTaskAC, changeTaskStatusAC, changeTaskTitleAC, removeTaskAC} from "./
 import {
     AddTodoListAC,
     ChangeTodolistFilterAC,
-    ChangeTodolistTitleAC, GetTodolistsAC,
+    ChangeTodolistTitleAC, getTodolistsAC, getTodosThunk,
     RemoveTodoListAC, TodolistDomainType,
 } from "./state/todolist-reducer";
 import {AppRootStateType} from "./store";
@@ -57,12 +57,7 @@ function AppWithRedux() {
     // })
 
     useEffect(() => {
-        todolistAPI.getTodolists()
-            .then((res) => {
-                let todos = res.data
-                dispatch(GetTodolistsAC(todos))
-            })
-
+        dispatch(getTodosThunk)
     }, [])
 
     const todoLists = useSelector<AppRootStateType, Array<TodolistDomainType>>(state => state.todolists)
