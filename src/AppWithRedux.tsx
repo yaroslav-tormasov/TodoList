@@ -1,26 +1,32 @@
 import React, {useCallback, useEffect} from 'react';
 import './App.css';
-
 import {TodoList} from "./TodoList";
 import AddItemForm from "./AddItemForm";
 import {AppBar, Button, Container, Grid, IconButton, Paper, Toolbar, Typography} from "@material-ui/core";
 import {Menu} from "@material-ui/icons";
-import {addTaskAC, changeTaskStatusAC, changeTaskTitleAC, removeTaskAC} from "./state/tasks-reducer";
 import {
-    AddTodoListAC,
+    addTaskThunkCreator,
+    removeTaskThunkCreator,
+    renameTaskThunkCreator,
+    updateTaskStatusThunkCreator
+} from "./state/tasks-reducer";
+import {
+    AddTodoListAC, addTodoTC,
     ChangeTodolistFilterAC,
-    ChangeTodolistTitleAC, getTodolistsAC, getTodosThunk,
-    RemoveTodoListAC, TodolistDomainType,
+    ChangeTodolistTitleAC,
+    getTodosThunkCreator,
+    RemoveTodoListAC,
+    TodolistDomainType,
 } from "./state/todolist-reducer";
 import {AppRootStateType} from "./store";
 import {useDispatch, useSelector} from "react-redux";
-import {todolistAPI} from "./api/todolist-api";
+import {TaskStatuses, TaskType, todolistAPI} from "./api/todolist-api";
 
-export type TaskType = {
-    id: string
-    title: string
-    isDone: boolean
-}
+// export type TaskType = {
+//     id: string
+//     title: string
+//     isDone: boolean
+// }
 
 export type TodoListType = {
     id: string
@@ -57,30 +63,27 @@ function AppWithRedux() {
     // })
 
     useEffect(() => {
-        dispatch(getTodosThunk)
+        dispatch(getTodosThunkCreator)
     }, [])
 
     const todoLists = useSelector<AppRootStateType, Array<TodolistDomainType>>(state => state.todolists)
     const tasks = useSelector<AppRootStateType, TasksStateType>(state => state.tasks)
-
     const dispatch = useDispatch()
 
     const addTask = useCallback((title: string, todoListID: string) => {
-        const action = (addTaskAC(title, todoListID))
-        dispatch(action)
+        dispatch(addTaskThunkCreator(title, todoListID))
     }, [])
 
     const removeTask = useCallback((taskId: string, todoListID: string) => {
-        dispatch(removeTaskAC(taskId, todoListID))
+        dispatch(removeTaskThunkCreator(taskId, todoListID))
     }, [])
 
-    const changeTaskStatus = useCallback((taskID: string, isDone: boolean, todoListID: string) => {
-        const action = dispatch(changeTaskStatusAC(taskID, isDone, todoListID))
-        dispatch(action)
+    const changeTaskStatus = useCallback((taskID: string, status: TaskStatuses, todoListID: string) => {
+        dispatch(updateTaskStatusThunkCreator(todoListID, taskID, status))
     }, [])
 
     const changeTaskTitle = useCallback((taskID: string, title: string, todoListID: string) => {
-        dispatch(changeTaskTitleAC(taskID, title, todoListID))
+        dispatch(renameTaskThunkCreator(taskID, title, todoListID))
     }, [])
 
 
@@ -94,7 +97,7 @@ function AppWithRedux() {
     }, [])
 
     const addTodoList = useCallback((title: string) => {
-        const action = AddTodoListAC(title);
+        const action = addTodoTC(title);
         dispatch(action)
     }, [dispatch])
 
@@ -125,10 +128,10 @@ function AppWithRedux() {
                             let tasksForTodoList = tasks[tl.id];
 
                             if (tl.filter === "active") {
-                                tasksForTodoList = tasks[tl.id].filter(t => t.isDone === false)
+                                tasksForTodoList = tasks[tl.id].filter(t => t.status === TaskStatuses.InProgress)
                             }
                             if (tl.filter === "completed") {
-                                tasksForTodoList = tasks[tl.id].filter(t => t.isDone === true)
+                                tasksForTodoList = tasks[tl.id].filter(t => t.status === TaskStatuses.Completed)
                             }
 
                             return (
