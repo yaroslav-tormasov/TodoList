@@ -2,7 +2,17 @@ import React, {useCallback, useEffect} from 'react';
 import './App.css';
 import {TodoList} from "./TodoList";
 import AddItemForm from "./AddItemForm";
-import {AppBar, Button, Container, Grid, IconButton, Paper, Toolbar, Typography} from "@material-ui/core";
+import {
+    AppBar,
+    Button,
+    Container,
+    Grid,
+    IconButton,
+    LinearProgress,
+    Paper,
+    Toolbar,
+    Typography
+} from "@material-ui/core";
 import {Menu} from "@material-ui/icons";
 import {
     addTaskThunkCreator,
@@ -11,7 +21,7 @@ import {
     updateTaskStatusThunkCreator
 } from "./state/tasks-reducer";
 import {
-    AddTodoListAC, addTodoTC,
+    addTodoTC,
     ChangeTodolistFilterAC,
     ChangeTodolistTitleAC,
     getTodosThunkCreator,
@@ -20,7 +30,9 @@ import {
 } from "./state/todolist-reducer";
 import {AppRootStateType} from "./store";
 import {useDispatch, useSelector} from "react-redux";
-import {TaskStatuses, TaskType, todolistAPI} from "./api/todolist-api";
+import {TaskStatuses, TaskType} from "./api/todolist-api";
+import {RequestStatusType} from "./state/app-reducer";
+import {ErrorSnackbar} from "./ErrorSnackBar";
 
 // export type TaskType = {
 //     id: string
@@ -41,6 +53,7 @@ export type FilterValuesType = "all" | "active" | "completed"
 
 function AppWithRedux() {
 
+    const status = useSelector<AppRootStateType, RequestStatusType>((state) => state.app.status)
     // const todoListID1 = v1();
     // const todoListID2 = v1();
     //
@@ -118,6 +131,7 @@ function AppWithRedux() {
                     <Button color="inherit">Login</Button>
                 </Toolbar>
             </AppBar>
+            {status === "loading" && <LinearProgress color="secondary" />}
             <Container fixed>
                 <Grid container style={{padding: "15px"}}>
                     <AddItemForm addItem={addTodoList}/>
@@ -157,6 +171,7 @@ function AppWithRedux() {
                     }
                 </Grid>
             </Container>
+            <ErrorSnackbar/>
         </div>
     );
 }

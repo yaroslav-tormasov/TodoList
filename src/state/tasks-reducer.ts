@@ -3,6 +3,7 @@ import {AddTodoListActionType, GetTodolistsActionType, RemoveTodolistActionType}
 import {Dispatch} from "redux";
 import {todolistAPI, TaskType, TaskStatuses} from "../api/todolist-api";
 import {AppRootStateType} from "../store";
+import {setAppStatusAC} from "./app-reducer";
 
 export type RemoveTaskActionType = {
     type: 'REMOVE-TASK',
@@ -139,15 +140,17 @@ export const setTasksAC = (tasks: Array<TaskType>, todolistId: string) => {
 }
 
 export const setTasksThunkCreator = (todoId: string) => (dispatch: Dispatch) => {
+    dispatch(setAppStatusAC("loading"))
     todolistAPI.getTasks(todoId)
         .then((res) => {
             let tasks = res.data.items
+            dispatch(setAppStatusAC("succeeded"))
             dispatch(setTasksAC(tasks, todoId))
         })
 }
 
 
-export const addTaskThunkCreator = ( title: string, todoId: string) => (dispatch: Dispatch) => {
+export const addTaskThunkCreator = (title: string, todoId: string) => (dispatch: Dispatch) => {
     todolistAPI.createTask(todoId, title)
         .then((res) => {
             const task = res.data.data.item
@@ -156,17 +159,19 @@ export const addTaskThunkCreator = ( title: string, todoId: string) => (dispatch
 }
 
 export const removeTaskThunkCreator = (taskID: string, todolistID: string) => (dispatch: Dispatch) => {
+    dispatch(setAppStatusAC("loading"))
     todolistAPI.deleteTask(todolistID, taskID).then((res) => {
+        dispatch(setAppStatusAC("succeeded"))
         dispatch(removeTaskAC(taskID, todolistID))
     })
 }
 
-export const renameTaskThunkCreator = (todoId: string, taskId:string, title: string) => (dispatch: Dispatch, getState: () => AppRootStateType) => {
+export const renameTaskThunkCreator = (todoId: string, taskId: string, title: string) => (dispatch: Dispatch, getState: () => AppRootStateType) => {
     const allTasksFromState = getState().tasks
     const tasksForCurrentTodolist = allTasksFromState[todoId]
     const task = tasksForCurrentTodolist.find(t => t.id === taskId)
 
-    if(task){
+    if (task) {
         todolistAPI.updateTask(todoId, taskId, {
             title: title,
             startDate: task.startDate,
@@ -175,7 +180,7 @@ export const renameTaskThunkCreator = (todoId: string, taskId:string, title: str
             deadline: task.deadline,
             status: task.status
         }).then((res) => {
-            dispatch(changeTaskTitleAC(taskId,title,todoId))
+            dispatch(changeTaskTitleAC(taskId, title, todoId))
         })
     }
 }
