@@ -8,6 +8,8 @@ import {useDispatch} from "react-redux";
 import {setTasksThunkCreator} from "./state/tasks-reducer";
 import {TaskStatuses, TaskType} from "./api/todolist-api";
 import {FilterValuesType} from "./AppWithRedux";
+import {removeTodoListTC} from "./state/todolist-reducer";
+import {RequestStatusType} from "./state/app-reducer";
 
 type PropsType = {
     id: string
@@ -21,6 +23,7 @@ type PropsType = {
     changeTaskTitle: (taskID: string, title: string, todoListID: string) => void
     changeTaskStatus: (taskID: string, isDone: TaskStatuses, todoListID: string) => void
     changeTodoListTitle: (todoListID: string, title: string) => void
+    entityStatus: RequestStatusType
 }
 
 export const TodoList = React.memo(function (props: PropsType) {
@@ -37,9 +40,10 @@ export const TodoList = React.memo(function (props: PropsType) {
         const changeTodoListTitle = useCallback((title: string) => {
             props.changeTodoListTitle(props.id, title)
         }, [props.changeTodoListTitle, props.id])
-        const removeTodoList = () => {
-            props.removeTodoList(props.id)
-        }
+        const removeTodoList = useCallback( (id: string) => {
+            const thunk = removeTodoListTC(id)
+            dispatch(thunk)
+        }, [])
 
         const onAllClickHandler = () => props.changeFilter("all", props.id);
         const onActiveClickHandler = () => props.changeFilter("active", props.id);
@@ -50,11 +54,11 @@ export const TodoList = React.memo(function (props: PropsType) {
                 <h3>
 
                     <EditableSpan title={props.title} changeTitle={changeTodoListTitle}/>
-                    <IconButton onClick={removeTodoList}>
+                    <IconButton onClick={removeTodoList} disabled={props.entityStatus === 'loading'}>
                         <Delete/>
                     </IconButton>
                 </h3>
-                <AddItemForm addItem={addTask}/>
+                <AddItemForm addItem={addTask} entityStatus={props.entityStatus}/>
 
                 <ul style={{listStyle: "none", padding: "0"}}>
                     {

@@ -2,7 +2,8 @@ import {todolistAPI, TodoListType} from "../api/todolist-api";
 import {Dispatch} from "redux";
 import {AppRootStateType} from "../store";
 import {FilterValuesType} from "../AppWithRedux";
-import {setAppStatusAC} from "./app-reducer";
+import {RequestStatusType, setAppErrorAC, setAppStatusAC, SetAppStatusActionType} from "./app-reducer";
+import {handleServerNetworkError} from "../utils/error-utils";
 
 export type RemoveTodolistActionType = {
     type: "REMOVE-TODOLIST",
@@ -27,6 +28,7 @@ const initialState: Array<TodolistDomainType> = []
 
 export type TodolistDomainType = TodoListType & {
     filter: FilterValuesType
+    entityStatus: RequestStatusType
 }
 
 type ActionType =
@@ -35,27 +37,21 @@ type ActionType =
     | AddTodoListActionType
     | RemoveTodolistActionType
     | GetTodolistsActionType
+    | SetTodolistsEntityStatusActionType
+    | SetAppStatusActionType
 
 
 export const todoListReducer = (state: Array<TodolistDomainType> = initialState, action: ActionType): Array<TodolistDomainType> => {
     switch (action.type) {
         case 'GET-TODOS':
             return action.todos.map((tl) => {
-                return {...tl, filter: 'all'}
+                return {...tl, filter: 'all', entityStatus: "idle"}
             })
 
         case "REMOVE-TODOLIST":
             return state.filter(t => t.id !== action.id)
         case "ADD-TODOLIST":
-            return [{...action.todo, filter: "all"}, ...state]
-        // const newTodoList: TodolistDomainType = {
-        //     id: action.todoListID,
-        //     title: action.title,
-        //     filter: "all",
-        //     addedDate: '',
-        //     order: 1
-        // }
-        // return [...state, newTodoList]
+            return [{...action.todo, filter: "all", entityStatus: 'idle'}, ...state]
         case "CHANGE-TODOLIST-TITLE": {
             const todoList = state.find(tl => tl.id === action.id)
             if (todoList) {
@@ -64,6 +60,10 @@ export const todoListReducer = (state: Array<TodolistDomainType> = initialState,
             }
             return state
         }
+
+        case "CHANGE-TODOLIST-ENTITY-STATUS":
+            return state.map(tl => tl.id === action.id ? {...tl, entityStatus: action.entityStatus} : tl)
+
         case "CHANGE-TODOLIST-FILTER": {
             const todoList = state.find(tl => tl.id === action.id)
             if (todoList) {
@@ -76,6 +76,14 @@ export const todoListReducer = (state: Array<TodolistDomainType> = initialState,
             return state
     }
 }
+
+export const changeTodolistEntityStatusAC = (id: string, entityStatus: RequestStatusType) => ({
+    type: 'CHANGE-TODOLIST-ENTITY-STATUS',
+    id,
+    entityStatus
+} as const)
+
+export type SetTodolistsEntityStatusActionType = ReturnType<typeof changeTodolistEntityStatusAC>
 
 export const RemoveTodoListAC = (todoListID: string): RemoveTodolistActionType => ({
     type: "REMOVE-TODOLIST",
@@ -119,9 +127,28 @@ export const addTodoTC = (title: string) => (dispatch: Dispatch) => {
     dispatch(setAppStatusAC("loading"))
     todolistAPI.createTodolist(title)
         .then((res) => {
-            const todo = res.data.data.item
-            dispatch(setAppStatusAC("succeeded"))
-            dispatch(AddTodoListAC(todo))
+            if (res.data.resultCode === 0) {
+                const todo = res.data.data.item
+                dispatch(setAppStatusAC("succeeded"))
+                dispatch(AddTodoListAC(todo))
+            } else {
+                handleServerNetworkError(res.data, dispatch)
+            }
         })
+        .catch((err) => {
+            handleServerNetworkError(err.message, dispatch)
+        })
+}
+
+export const removeTodoListTC = (todolistID: string) => {
+    return (dispatch: Dispatch<ActionType>) => {
+        dispatch(setAppStatusAC("loading"))
+        dispatch(changeTodolistEntityStatusAC(todolistID, 'loading'))
+        todolistAPI.deleteTodolist(todolistID)
+            .then((res) => {
+                dispatch(RemoveTodoListAC(todolistID))
+                dispatch(setAppStatusAC("succeeded"))
+            })
+    }
 }
 

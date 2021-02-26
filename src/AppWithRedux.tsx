@@ -15,7 +15,7 @@ import {
 } from "@material-ui/core";
 import {Menu} from "@material-ui/icons";
 import {
-    addTaskThunkCreator,
+    addTaskTC,
     removeTaskThunkCreator,
     renameTaskThunkCreator,
     updateTaskStatusThunkCreator
@@ -84,7 +84,7 @@ function AppWithRedux() {
     const dispatch = useDispatch()
 
     const addTask = useCallback((title: string, todoListID: string) => {
-        dispatch(addTaskThunkCreator(title, todoListID))
+        dispatch(addTaskTC(title, todoListID))
     }, [])
 
     const removeTask = useCallback((taskId: string, todoListID: string) => {
@@ -105,8 +105,7 @@ function AppWithRedux() {
     }, [])
 
     const removeTodoList = useCallback((todoListID: string) => {
-        const action = RemoveTodoListAC(todoListID)
-        dispatch(action)
+       dispatch(removeTodoList(todoListID))
     }, [])
 
     const addTodoList = useCallback((title: string) => {
@@ -161,6 +160,7 @@ function AppWithRedux() {
                                             changeFilter={changeFilter}
                                             changeTaskStatus={changeTaskStatus}
                                             removeTodoList={removeTodoList}
+                                            entityStatus={tl.entityStatus}
                                             changeTaskTitle={changeTaskTitle}
                                             changeTodoListTitle={changeTodoListTitle}
                                         />

@@ -3,7 +3,8 @@ import {AddTodoListActionType, GetTodolistsActionType, RemoveTodolistActionType}
 import {Dispatch} from "redux";
 import {todolistAPI, TaskType, TaskStatuses} from "../api/todolist-api";
 import {AppRootStateType} from "../store";
-import {setAppStatusAC} from "./app-reducer";
+import {setAppErrorAC, SetAppErrorActionType, setAppStatusAC, SetAppStatusActionType} from "./app-reducer";
+import {handleServerNetworkError} from "../utils/error-utils";
 
 export type RemoveTaskActionType = {
     type: 'REMOVE-TASK',
@@ -44,6 +45,8 @@ type ActionType = RemoveTaskActionType
     | RemoveTodolistActionType
     | GetTodolistsActionType
     | SetTasksActionType
+    | SetAppErrorActionType
+    | SetAppStatusActionType
 
 export const tasksReducer = (state: TasksStateType = initialState, action: ActionType): TasksStateType => {
     switch (action.type) {
@@ -150,13 +153,24 @@ export const setTasksThunkCreator = (todoId: string) => (dispatch: Dispatch) => 
 }
 
 
-export const addTaskThunkCreator = (title: string, todoId: string) => (dispatch: Dispatch) => {
-    todolistAPI.createTask(todoId, title)
-        .then((res) => {
-            const task = res.data.data.item
-            dispatch(addTaskAC(task))
+export const addTaskTC = (title: string, todolistId: string) => (dispatch: Dispatch<ActionType>) => {
+    dispatch(setAppStatusAC('loading'))
+    todolistAPI.createTask(todolistId, title)
+        .then(res => {
+            if (res.data.resultCode === 0) {
+                const task = res.data.data.item
+                dispatch(addTaskAC(task))
+                dispatch(setAppStatusAC('succeeded'))
+            } else {
+                handleServerNetworkError(res.data, dispatch)
+            }
+        })
+        .catch((err) => {
+            handleServerNetworkError(err.message, dispatch)
         })
 }
+
+
 
 export const removeTaskThunkCreator = (taskID: string, todolistID: string) => (dispatch: Dispatch) => {
     dispatch(setAppStatusAC("loading"))
