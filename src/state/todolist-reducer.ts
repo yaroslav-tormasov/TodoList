@@ -127,12 +127,14 @@ export const addTodoTC = (title: string) => (dispatch: Dispatch) => {
     dispatch(setAppStatusAC("loading"))
     todolistAPI.createTodolist(title)
         .then((res) => {
+            debugger;
+
             if (res.data.resultCode === 0) {
                 const todo = res.data.data.item
                 dispatch(setAppStatusAC("succeeded"))
                 dispatch(AddTodoListAC(todo))
             } else {
-                handleServerNetworkError(res.data, dispatch)
+                handleServerNetworkError(res.data.messages[0], dispatch)
             }
         })
         .catch((err) => {

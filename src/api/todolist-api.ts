@@ -20,7 +20,7 @@ export type TodoListType = {
     addedDate: string
 }
 
-type BaseResponseType<D = {}> = {
+export type BaseResponseType<D = {}> = {
     resultCode: number
     messages: Array<string>
     fieldsErrors: Array<string>
@@ -82,6 +82,7 @@ export const todolistAPI = {
     },
 
     createTodolist(title: string) {
+        debugger;
         return instance.post<BaseResponseType<{item: TodoListType}>>(`todo-lists`, {title}, settings)
     },
 

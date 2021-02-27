@@ -162,7 +162,7 @@ export const addTaskTC = (title: string, todolistId: string) => (dispatch: Dispa
                 dispatch(addTaskAC(task))
                 dispatch(setAppStatusAC('succeeded'))
             } else {
-                handleServerNetworkError(res.data, dispatch)
+                handleServerNetworkError(res.data.messages[0], dispatch)
             }
         })
         .catch((err) => {

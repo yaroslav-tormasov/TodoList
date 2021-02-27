@@ -40,10 +40,10 @@ export const TodoList = React.memo(function (props: PropsType) {
         const changeTodoListTitle = useCallback((title: string) => {
             props.changeTodoListTitle(props.id, title)
         }, [props.changeTodoListTitle, props.id])
-        const removeTodoList = useCallback( (id: string) => {
-            const thunk = removeTodoListTC(id)
+        const removeTodoList = useCallback( () => {
+            const thunk = removeTodoListTC(props.id)
             dispatch(thunk)
-        }, [])
+        }, [props.id])
 
         const onAllClickHandler = () => props.changeFilter("all", props.id);
         const onActiveClickHandler = () => props.changeFilter("active", props.id);
