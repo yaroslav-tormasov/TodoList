@@ -25,7 +25,6 @@ import {
     ChangeTodolistFilterAC,
     ChangeTodolistTitleAC,
     getTodosThunkCreator,
-    RemoveTodoListAC,
     TodolistDomainType,
 } from "./state/todolist-reducer";
 import {AppRootStateType} from "./store";
@@ -33,12 +32,10 @@ import {useDispatch, useSelector} from "react-redux";
 import {TaskStatuses, TaskType} from "./api/todolist-api";
 import {RequestStatusType} from "./state/app-reducer";
 import {ErrorSnackbar} from "./ErrorSnackBar";
+import {Login} from "./features/Login/Login";
+import {TodolistsList} from "./state/TodolistsList";
+import {Route, Switch} from "react-router-dom";
 
-// export type TaskType = {
-//     id: string
-//     title: string
-//     isDone: boolean
-// }
 
 export type TodoListType = {
     id: string
@@ -132,6 +129,14 @@ function AppWithRedux() {
             </AppBar>
             {status === "loading" && <LinearProgress color="secondary" />}
             <Container fixed>
+                <Switch>
+                <Route exact path={'/'} render={() => <TodolistsList />} />
+                <Route path={'/login'} render={() => <Login />} />
+                <Route path={'/404'} render={() => <h1>404.Page not found}</h1> }/>
+                    <Redirect from={'*'} to={'/404'} />
+                </Switch>
+
+
                 <Grid container style={{padding: "15px"}}>
                     <AddItemForm addItem={addTodoList}/>
                 </Grid>
